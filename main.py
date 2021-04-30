@@ -29,7 +29,7 @@ def get_daily_data() :
     # df to which we'll append our coins
     df_top100_best7d = pd.DataFrame(columns=['id', 'price_change_percentage_7d'])
 
-    for id in ids_list[:2]:
+    for id in ids_list[:25]:
         # step 1
         coin_data7d = cg.get_coin_market_chart_by_id(id=id, vs_currency='btc', days=7)
         coin_data7d = pd.DataFrame(coin_data7d)
