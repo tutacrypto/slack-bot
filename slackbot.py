@@ -1,12 +1,11 @@
 import json
 import requests
-import pandas as pd
-
-
-from slack import WebClient
-from dotenv import load_dotenv
 import os
 import ipdb
+from dotenv import load_dotenv
+import pandas as pd
+from slack import WebClient
+
 
 load_dotenv()
 
