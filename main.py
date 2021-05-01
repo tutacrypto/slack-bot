@@ -17,6 +17,10 @@ def get_coin_data():
     # getting the list of ids
     crypto_100 = cg.get_coins_markets(vs_currency='btc')
     df_top100 = pd.DataFrame(crypto_100, columns=['id', 'symbol', 'current_price', 'market_cap', 'market_cap_rank', 'price_change_percentage_24h'])
+    
+    # deleting the stablecoins
+    stablecoins = ['usdt', 'usdc', 'busd', 'dai', 'ust']
+    df_top100 = df_top100[~df_top100['symbol'].isin(stablecoins)]
     ids_list = df_top100['id'].tolist()
 
     # getting the 24h ranking
@@ -25,7 +29,7 @@ def get_coin_data():
     # df to which we'll append our 7d data
     df_top100_best7d = pd.DataFrame(columns=['id', 'price_change_percentage_7d'])
 
-    # gztting the 7d performance of the top x coins
+    # getting the 7d performance of the top x coins
     for id in ids_list:
         # step 1: getting hourly prices for the last 7 days
         coin_data7d = cg.get_coin_market_chart_by_id(id=id, vs_currency='btc', days=7)
@@ -46,7 +50,7 @@ def get_coin_data():
         to_append = [[id, price_change_percentage_7d]]
         print(to_append)
         df_top100_best7d = df_top100_best7d.append(pd.DataFrame(to_append, columns=['id','price_change_percentage_7d']),ignore_index=True)
-        time.sleep(0.50)
+        time.sleep(0.2)
 
     # getting the final dataframe
     df_top100 = pd.merge(df_top100_best24h, df_top100_best7d, on='id')
