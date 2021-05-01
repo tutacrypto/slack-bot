@@ -1,19 +1,17 @@
 import time
+import json
+import requests
+import os
+from dotenv import load_dotenv
+
 import pandas as pd
 from pycoingecko import CoinGeckoAPI
 from slackbot import Slackbot
+from slack import WebClient
 from tabulate import tabulate
+import plotly.graph_objects as go
 
-
-#!/usr/bin/env python
-from apscheduler.schedulers.blocking import BlockingScheduler
-
-# Jobs scheduler
-def scheduled_job():
-    get_daily_data()
-
-
-def get_daily_data():
+def get_coin_data():
     cg = CoinGeckoAPI()
 
     # getting the list of ids
@@ -28,7 +26,7 @@ def get_daily_data():
     df_top100_best7d = pd.DataFrame(columns=['id', 'price_change_percentage_7d'])
 
     # gztting the 7d performance of the top x coins
-    for id in ids_list[:25]:
+    for id in ids_list:
         # step 1: getting hourly prices for the last 7 days
         coin_data7d = cg.get_coin_market_chart_by_id(id=id, vs_currency='btc', days=7)
         coin_data7d = pd.DataFrame(coin_data7d)
@@ -48,20 +46,50 @@ def get_daily_data():
         to_append = [[id, price_change_percentage_7d]]
         print(to_append)
         df_top100_best7d = df_top100_best7d.append(pd.DataFrame(to_append, columns=['id','price_change_percentage_7d']),ignore_index=True)
-        time.sleep(0.1)
+        time.sleep(0.50)
 
     # getting the final dataframe
     df_top100 = pd.merge(df_top100_best24h, df_top100_best7d, on='id')
-    df1 = df_top100.sort_values('price_change_percentage_24h', ascending=False)
+    df1 = df_top100.sort_values('price_change_percentage_24h', ascending=True)
     df1 = df1[['symbol', 'market_cap_rank', 'price_change_percentage_24h', 'price_change_percentage_7d']]
     # df7 = df_top100.sort_values('price_change_percentage_7d', ascending=False)
+    return df1
 
-    Slackbot(df1).send_slack()
+def plot_data(data, file_type):
+    df = data
+
+    # plotting the dataframe
+    ids = df['symbol']
+    fig = go.Figure(data=[
+        go.Bar(name='24h', x=df['price_change_percentage_24h'], y=ids, orientation='h'),
+        go.Bar(name='7d', x=df['price_change_percentage_7d'], y=ids, orientation='h')
+    ])
+    # Change the bar modes
+    fig.update_layout(barmode='group')
+
+    # Saving and sending the graph
+    if file_type == "html":
+        # save as an html file (interactive)
+        fig.write_html("html/file.html")
+    else:
+        # save as a picture
+        fig.write_image("images/fig1.png")
+
+
+
+def send_to_slack():
+
+    # sending the image to slack
+    client = WebClient(token=os.environ.get("SLACK_TOKEN"))
+    client.files_upload(
+        channels='#crypto_screening', 
+        initial_comment="Here's the 24h ranking of altcoins with their 7 days data, in BTC terms :rocket:", 
+        file="images/fig1.png",
+    )
 
     
 if __name__ == '__main__':
-    get_daily_data()
-    #sched = BlockingScheduler(timezone="UTC")
-    #sched.add_job(scheduled_job, trigger='cron', day_of_week='mon-fri', hour=19, minute=41)
-    #sched.start()
+    data = get_coin_data()
+    plot_data(data, "png")
+    send_to_slack()
 

@@ -14,33 +14,36 @@ class Slackbot(object):
 
     # The constructor for the class. It takes the channel name as the a
     # parameter and then sets it as an instance variable
-    def __init__(self, company):
+    def __init__(self, data):
         self.channel = '#crypto_screening'
         self.slack_token = os.getenv('SLACK_TOKEN')
         self.error = 'error'
-        self.company = company
+        self.data = data
 
-    # return a Dict that contains the default text for the message
+
+    # returns a Dict that contains the default text for the message
     def text_block(self):
 
         text_block = {
                 "type": "section",
                 "text": {
                     "type": "mrkdwn",
-                    "text": ( f"{self.company.to_markdown()}"
+                    "text": ( f"{self.data.to_markdown()}"
 
                      ),
                 },
             }
         return text_block
 
-    # Craft and return the entire message payload as a dictionary.
+
+    # Crafts and returns the entire message payload as a dictionary.
     def get_message_payload(self):
         message = {
                 "channel": self.channel,
                 "blocks": [self.text_block()]
             }
         return message
+
 
     def send_slack(self):
         # Create a slack client
