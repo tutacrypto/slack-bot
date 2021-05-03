@@ -30,7 +30,7 @@ def get_coin_data():
     df_top100_best7d = pd.DataFrame(columns=['id', 'price_change_percentage_7d'])
 
     # getting the 7d performance of the top x coins
-    for id in ids_list:
+    for id in ids_list[:80]:
         # step 1: getting hourly prices for the last 7 days
         coin_data7d = cg.get_coin_market_chart_by_id(id=id, vs_currency='btc', days=7)
         coin_data7d = pd.DataFrame(coin_data7d)
@@ -50,17 +50,18 @@ def get_coin_data():
         to_append = [[id, price_change_percentage_7d]]
         print(to_append)
         df_top100_best7d = df_top100_best7d.append(pd.DataFrame(to_append, columns=['id','price_change_percentage_7d']),ignore_index=True)
-        time.sleep(0.2)
+        time.sleep(0.5)
 
     # getting the final dataframe
     df_top100 = pd.merge(df_top100_best24h, df_top100_best7d, on='id')
-    df1 = df_top100.sort_values('price_change_percentage_24h', ascending=True)
+    df1 = df_top100.sort_values('price_change_percentage_24h', ascending=False)
     df1 = df1[['symbol', 'market_cap_rank', 'price_change_percentage_24h', 'price_change_percentage_7d']]
-    # df7 = df_top100.sort_values('price_change_percentage_7d', ascending=False)
     return df1
 
 def plot_data(data, file_type):
-    df = data
+    # we need data that renders nice visually
+    df = data[:15]
+    df = df.sort_values('price_change_percentage_24h', ascending=True)
 
     # plotting the dataframe
     ids = df['symbol']
@@ -80,20 +81,28 @@ def plot_data(data, file_type):
         fig.write_image("images/fig1.png")
 
 
+# the data can be sent as an image (max 15 coins for visualization) or a text (very ugly table, max 25)
+def send_to_slack(type, data):
+    data = data
 
-def send_to_slack():
+    if type == "image":
+        plot_data(data, "png")
+        # sending the image to slack
+        client = WebClient(token=os.environ.get("SLACK_TOKEN"))
+        client.files_upload(
+            channels='#crypto_screening', 
+            initial_comment="Here's the 24h ranking of altcoins with their 7 days data, in BTC terms :rocket:", 
+            file="images/fig1.png",
+        )
 
-    # sending the image to slack
-    client = WebClient(token=os.environ.get("SLACK_TOKEN"))
-    client.files_upload(
-        channels='#crypto_screening', 
-        initial_comment="Here's the 24h ranking of altcoins with their 7 days data, in BTC terms :rocket:", 
-        file="images/fig1.png",
-    )
+    elif type == "text":
+        Slackbot(data[:25]).send_slack()
 
     
 if __name__ == '__main__':
-    data = get_coin_data()
-    plot_data(data, "png")
-    send_to_slack()
+    """
+    we think having only info on the 15th best performing coins is not enough, 
+    so we are going to go for the text message for now.
+    """
+    send_to_slack("text", get_coin_data())
 
