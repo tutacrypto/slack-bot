@@ -4,7 +4,7 @@ import os
 import ipdb
 from dotenv import load_dotenv
 import pandas as pd
-from slack import WebClient
+import slack
 
 
 load_dotenv()
@@ -47,7 +47,7 @@ class Slackbot(object):
 
     def send_slack(self):
         # Create a slack client
-        slack_web_client = WebClient(self.slack_token)
+        slack_web_client = slack.WebClient(self.slack_token)
 
         message = self.get_message_payload()
         # Post the onboarding message in Slack

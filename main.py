@@ -7,7 +7,7 @@ from dotenv import load_dotenv
 import pandas as pd
 from pycoingecko import CoinGeckoAPI
 from slackbot import Slackbot
-from slack import WebClient
+import slack
 from tabulate import tabulate
 import plotly.graph_objects as go
 
@@ -50,7 +50,8 @@ def get_coin_data():
         to_append = [[id, price_change_percentage_7d]]
         print(to_append)
         df_top100_best7d = df_top100_best7d.append(pd.DataFrame(to_append, columns=['id','price_change_percentage_7d']),ignore_index=True)
-        time.sleep(0.5)
+        # need 1 sec sleep time not to reach the coingecko API limit 
+        time.sleep(1)
 
     # getting the final dataframe
     df_top100 = pd.merge(df_top100_best24h, df_top100_best7d, on='id')
@@ -88,7 +89,7 @@ def send_to_slack(type, data):
     if type == "image":
         plot_data(data, "png")
         # sending the image to slack
-        client = WebClient(token=os.environ.get("SLACK_TOKEN"))
+        client = slack.WebClient(token=os.environ.get("SLACK_TOKEN"))
         client.files_upload(
             channels='#crypto_screening', 
             initial_comment="Here's the 24h ranking of altcoins with their 7 days data, in BTC terms :rocket:", 
