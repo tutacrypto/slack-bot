@@ -31,7 +31,7 @@ def get_coin_data():
     df_top100_best7d = pd.DataFrame(columns=['id', 'price_change_percentage_7d'])
 
     # getting the 7d performance of the top x coins
-    for id in ids_list[:10]:
+    for id in ids_list[:80]:
         # step 1: getting hourly prices for the last 7 days
         coin_data7d = cg.get_coin_market_chart_by_id(id=id, vs_currency='btc', days=7)
         coin_data7d = pd.DataFrame(coin_data7d)
