@@ -98,11 +98,12 @@ def plot_data(data, file_type):
 # sending the data to Slack
 def send_to_slack(type, data):
     data = data
+    client = WebClient(token=os.environ.get("SLACK_TOKEN"))
+
 
     if type == "image":
         plot_data(data, "png")
         # sending the text or image to slack
-        client = WebClient(token=os.environ.get("SLACK_TOKEN"))
         client.files_upload(
             channels='#crypto_screening', 
             initial_comment="Here's the 24h ranking of altcoins with their 7 days data, in BTC terms :rocket:", 
@@ -110,7 +111,10 @@ def send_to_slack(type, data):
         )
 
     elif type == "text":
-        Slackbot(data[:25]).send_slack()
+        client.chat_postMessage(
+            channel='#crypto_screening',
+            text=data.to_markdown()
+        )
 
 
 
