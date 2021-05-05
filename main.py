@@ -3,14 +3,19 @@ import json
 import requests
 import os
 from dotenv import load_dotenv
-
 import pandas as pd
 from pycoingecko import CoinGeckoAPI
 from slackbot import Slackbot
-# import slack
 from slack_sdk import WebClient
 from tabulate import tabulate
 import plotly.graph_objects as go
+
+
+"""
+First, we need to get the data from coingecko API. 
+Then, we will either plot it to get a bar chart, or send it as a text message. 
+"""
+
 
 def get_coin_data():
     cg = CoinGeckoAPI()
@@ -51,17 +56,21 @@ def get_coin_data():
         to_append = [[id, price_change_percentage_7d]]
         print(to_append)
         df_top100_best7d = df_top100_best7d.append(pd.DataFrame(to_append, columns=['id','price_change_percentage_7d']),ignore_index=True)
-        # need 1 sec sleep time not to reach the coingecko API limit 
+        # need 1 sec sleep time so we don't reach coingecko's API limit 
         time.sleep(1)
 
     # getting the final dataframe
-    df_top100 = pd.merge(df_top100_best24h, df_top100_best7d, on='id')
-    df1 = df_top100.sort_values('price_change_percentage_24h', ascending=False)
-    df1 = df1[['symbol', 'market_cap_rank', 'price_change_percentage_24h', 'price_change_percentage_7d']]
-    return df1
+    df = pd.merge(df_top100_best24h, df_top100_best7d, on='id')
+    df = df.sort_values('price_change_percentage_24h', ascending=False)
+    df = df[['symbol', 'market_cap_rank', 'price_change_percentage_24h', 'price_change_percentage_7d']]
+    return df
 
+
+
+
+# the function that would be use to plot the data
 def plot_data(data, file_type):
-    # we need data that renders nice visually
+    # we need data that renders nice visually if we are going to plot it
     df = data[:15]
     df = df.sort_values('price_change_percentage_24h', ascending=True)
 
@@ -71,10 +80,10 @@ def plot_data(data, file_type):
         go.Bar(name='24h', x=df['price_change_percentage_24h'], y=ids, orientation='h'),
         go.Bar(name='7d', x=df['price_change_percentage_7d'], y=ids, orientation='h')
     ])
-    # Change the bar modes
+    # changing the bar mode
     fig.update_layout(barmode='group')
 
-    # Saving and sending the graph
+    # saving the plot
     if file_type == "html":
         # save as an html file (interactive)
         fig.write_html("html/file.html")
@@ -83,13 +92,16 @@ def plot_data(data, file_type):
         fig.write_image("images/fig1.png")
 
 
-# the data can be sent as an image (max 15 coins for visualization) or a text (very ugly table, max 25)
+
+
+
+# sending the data to Slack
 def send_to_slack(type, data):
     data = data
 
     if type == "image":
         plot_data(data, "png")
-        # sending the image to slack
+        # sending the text or image to slack
         client = WebClient(token=os.environ.get("SLACK_TOKEN"))
         client.files_upload(
             channels='#crypto_screening', 
@@ -100,11 +112,10 @@ def send_to_slack(type, data):
     elif type == "text":
         Slackbot(data[:25]).send_slack()
 
+
+
     
 if __name__ == '__main__':
-    """
-    we think having only info on the 15th best performing coins is not enough, 
-    so we are going to go for the text message for now.
-    """
+    # For now we prefer receiving the top 25 by text
     send_to_slack("text", get_coin_data())
 

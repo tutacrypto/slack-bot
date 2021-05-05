@@ -4,12 +4,11 @@ import os
 import ipdb
 from dotenv import load_dotenv
 import pandas as pd
-# import slack
 from slack_sdk import WebClient
 
-
-
 load_dotenv()
+
+
 
 
 class Slackbot(object):
