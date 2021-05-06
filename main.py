@@ -37,7 +37,7 @@ def get_coin_data():
     df_top100_best7d = pd.DataFrame(columns=['id', 'price_change_percentage_7d'])
 
     # getting the 7d performance of the top x coins
-    for id in ids_list[:10]:
+    for id in ids_list[:80]:
         # step 1: getting hourly prices for the last 7 days
         coin_data7d = cg.get_coin_market_chart_by_id(id=id, vs_currency='btc', days=7)
         coin_data7d = pd.DataFrame(coin_data7d)
@@ -58,7 +58,7 @@ def get_coin_data():
         print(to_append)
         df_top100_best7d = df_top100_best7d.append(pd.DataFrame(to_append, columns=['id','price_change_percentage_7d']),ignore_index=True)
         # need 1 sec sleep time so we don't reach coingecko's API limit 
-        time.sleep(0.2)
+        time.sleep(1)
 
     # getting the final dataframe
     df = pd.merge(df_top100_best24h, df_top100_best7d, on='id')
@@ -137,10 +137,9 @@ def send_to_slack(type, data):
                 "type": "section",
                 "text": {
                     "type": "mrkdwn",
-                    "text": data.to_markdown(),
+                    "text": data[:25].to_markdown(),
                 },
             },]
-            # text=data.to_markdown()
         )
 
 
