@@ -101,20 +101,21 @@ def plot_data(data, file_type):
 def send_to_slack(type, data):
     data = data
     client = WebClient(token=os.environ.get("SLACK_TOKEN"))
+    channel = os.environ.get("CHANNEL")
 
 
     if type == "image":
         plot_data(data, "png")
         # sending the text or image to slack
         client.files_upload(
-            channels='#crypto_screening', 
+            channels=channel, 
             initial_comment="Here's the 24h ranking of altcoins with their 7 days data, in BTC terms :rocket:", 
             file="images/fig1.png",
         )
 
     elif type == "text":
         client.chat_postMessage(
-            channel='#crypto_screening',
+            channel=channel,
             username="The Crypto Bot",
             # this will display in the notification
             text= "Top 25 ALTBTC 24h",
