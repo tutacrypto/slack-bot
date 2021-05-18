@@ -30,6 +30,11 @@ def get_coin_data():
     df_top100 = df_top100[~df_top100['symbol'].isin(stablecoins_btc)]
     ids_list = df_top100['id'].tolist()
 
+    # getting the 24h volume in USD
+    usd_volume_24h = cg.get_coins_markets(vs_currency='usd')
+    df_usd_volume_24h = pd.DataFrame(usd_volume_24h, columns=['id', 'total_volume'])
+    df_usd_volume_24h['total_volume'] = df_usd_volume_24h['total_volume'] / 1000000
+
     # getting the 24h ranking
     df_top100_best24h = df_top100.sort_values('price_change_percentage_24h', ascending=False)
     
@@ -62,9 +67,11 @@ def get_coin_data():
 
     # getting the final dataframe
     df = pd.merge(df_top100_best24h, df_top100_best7d, on='id')
+    # df = pd.merge(df, df_usd_volume_24h, on='id')
     df = df.sort_values('price_change_percentage_24h', ascending=False)
     df = df[['symbol', 'market_cap_rank', 'price_change_percentage_24h', 'price_change_percentage_7d']]
-    df.columns = ['Ticker', 'Market Cap Rank', 'Price Change 24h', 'Price Change 7d']
+    df.columns = ['Ticker', 'MkCap Rank', 'Price Change 24h', 'Price Change 7d']
+    df = df.round(decimals=2)
     return df
 
 
