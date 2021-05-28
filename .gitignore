@@ -1,7 +1,10 @@
-/slackbot.py
 .DS_Store
 .env
+.dockerignore
 venv/
 __pycache__/
+
 images/
-/try.py
+slack-bot-local-test/.env
+slack-bot-local-test/.DS_Store
+slack-bot-local-test/images/

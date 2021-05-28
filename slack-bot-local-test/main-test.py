@@ -26,46 +26,45 @@ def get_coin_data():
     df_top100 = pd.DataFrame(crypto_100, columns=['id', 'symbol', 'current_price', 'market_cap', 'market_cap_rank', 'price_change_percentage_24h'])
     
     # removing some coins like stablecoins & btc
-    to_remove = ['usdt', 'usdc', 'busd', 'dai', 'ust', 'btc', 'tusd', 'pax', 'cdai', 'cusdc', 'ceth', 'husd']
-    df_top100 = df_top100[~df_top100['symbol'].isin(to_remove)]
+    symbols_to_remove = ['usdt', 'usdc', 'busd', 'dai', 'ust', 'btc', 'tusd', 'pax', 'cdai', 'cusdc', 'ceth', 'husd']
+    df_top100 = df_top100[~df_top100['symbol'].isin(symbols_to_remove)]
     ids_list = df_top100['id'].tolist()
 
-    # getting the 24h ranking
-    df_top100_best24h = df_top100.sort_values('price_change_percentage_24h', ascending=False)
-    
     # df to which we'll append our 7d data
-    df_top100_best7d = pd.DataFrame(columns=['id', 'price_change_percentage_7d'])
+    df_top100_best_3d = pd.DataFrame(columns=['id', 'price_change_percentage_3d'])
 
     # getting the 7d performance of the top x coins
     for id in ids_list[:80]:
         # step 1: getting hourly prices for the last 7 days
-        coin_data7d = cg.get_coin_market_chart_by_id(id=id, vs_currency='btc', days=7)
-        coin_data7d = pd.DataFrame(coin_data7d)
-        coin_data7d = coin_data7d['prices']
-        coin_data7d = coin_data7d.to_frame() # we get a df of one column with [timestamp, prices] at each row.
+        coin_data3d = cg.get_coin_market_chart_by_id(id=id, vs_currency='btc', days=3)
+        coin_data3d = pd.DataFrame(coin_data3d)
+        coin_data3d = coin_data3d['prices']
+        coin_data3d = coin_data3d.to_frame() # we get a df of one column with [timestamp, prices] at each row.
+        
         # splitting it in two columns
-        coin_data7d = pd.DataFrame(coin_data7d['prices'].to_list(), columns=['timestamp', 'prices'])
-
+        coin_data3d = pd.DataFrame(coin_data3d['prices'].to_list(), columns=['timestamp', 'prices'])
+        
         # step 2: computing the percentage change for the last 7 days
-        oldest_day = coin_data7d.head(24)
+        oldest_day = coin_data3d.head(24)
         oldest_day_price_avg = oldest_day['prices'].mean()
-        mostrecent_day = coin_data7d.tail(24)
+        mostrecent_day = coin_data3d.tail(24)
         mostrecent_day_price_avg = mostrecent_day['prices'].mean()
-        price_change_percentage_7d = ((mostrecent_day_price_avg - oldest_day_price_avg) / oldest_day_price_avg)*100
-
+        price_change_percentage_3d = ((mostrecent_day_price_avg - oldest_day_price_avg) / oldest_day_price_avg)*100
+        
         # step 4: appending the data to the df
-        to_append = [[id, price_change_percentage_7d]]
+        to_append = [[id, price_change_percentage_3d]]
         print(to_append)
-        df_top100_best7d = df_top100_best7d.append(pd.DataFrame(to_append, columns=['id','price_change_percentage_7d']),ignore_index=True)
+        df_top100_best_3d = df_top100_best_3d.append(pd.DataFrame(to_append, columns=['id','price_change_percentage_3d']), ignore_index=True)
         # need 1 sec sleep time so we don't reach coingecko's API limit 
         time.sleep(1)
 
-    # getting the final dataframe
-    df = pd.merge(df_top100_best24h, df_top100_best7d, on='id')
-    # df = pd.merge(df, df_usd_volume_24h, on='id')
-    df = df.sort_values('price_change_percentage_24h', ascending=False)
-    df = df[['symbol', 'market_cap_rank', 'price_change_percentage_24h', 'price_change_percentage_7d']]
-    df.columns = ['Ticker', 'MkCap Rank', 'Price Change 24h', 'Price Change 7d']
+    # merging dataframes to get the symbols and mkcap ranks
+    df = pd.merge(df_top100, df_top100_best_3d, on='id')
+    df = df.sort_values('price_change_percentage_3d', ascending=False)
+    # selecting only specific columns
+    df = df[['symbol', 'market_cap_rank', 'price_change_percentage_3d']]
+    # renaming the columns
+    df.columns = ['Ticker', 'MkCap Rank', 'Price Change 3d']
     df = df.round(decimals=2)
     return df
 
