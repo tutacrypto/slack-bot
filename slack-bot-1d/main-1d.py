@@ -133,7 +133,7 @@ def send_to_slack(type, data):
                 "type": "section",
                 "text": {
                     "type": "mrkdwn",
-                    "text": "Welcome to The Crypto Bot, giving you daily update of the best performing alts in the past 24 hours from the top 80. \n We hope it helps you in your trading! :pray: \n\n",
+                    "text": "Welcome to The Crypto Bot 24h Perf, giving you daily update of the best performing alts in the past 24 hours from the top 80. \n We hope this helps you in your trading! :pray: \n\n",
                 },
             },
             {

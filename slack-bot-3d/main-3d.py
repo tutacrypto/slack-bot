@@ -65,7 +65,7 @@ def get_coin_data():
     # selecting only specific columns
     df = df[['symbol', 'market_cap_rank', 'price_change_percentage_3d']]
     # renaming the columns
-    df.columns = ['Ticker', 'N°', 'BTC% Change 3d']
+    df.columns = ['Ticker', 'N°', '3d % change (btc)']
     df = df.set_index('N°')
     df = df.round(decimals=2)
     return df
@@ -121,20 +121,20 @@ def send_to_slack(type, data):
             channel=channel,
             username="The Crypto Bot",
             # this will display in the notification
-            text= "Top 25 ALTBTC 24h",
+            text= "Top 25 ALTBTC 3d",
             blocks=[
             {
                 "type": "section",
                 "text": {
                     "type": "mrkdwn",
-                    "text": "*Top 25 ALTBTC - 3d performance ranking*",
+                    "text": "*Top 25 ALTBTC - 3d ranking*",
                 },
             },
             {
                 "type": "section",
                 "text": {
                     "type": "mrkdwn",
-                    "text": "Welcome to The Crypto Bot 3d Perf, giving you daily update of the best performing alts over the past 3 days hours from the top 80 market cap. \n We hope it helps you in your trading! :pray: \n\n",
+                    "text": "Welcome to The Crypto Bot 3d Perf, giving you daily update of the best performing alts over the past 3 days from the top 80 market cap. \n We hope this helps you in your trading! :pray: \n\n",
                 },
             },
             {

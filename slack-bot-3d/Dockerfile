@@ -2,7 +2,7 @@
 FROM python:3.8
 
 # set the working directory in the container
-WORKDIR /slack-bot-app-3d
+WORKDIR /slack-bot-3d
 
 # copy the dependencies file to the working directory
 COPY requirements.txt .
