@@ -30,10 +30,10 @@ def get_coin_data():
     df_top100 = df_top100[~df_top100['symbol'].isin(symbols_to_remove)]
     ids_list = df_top100['id'].tolist()
 
-    # df to which we'll append our 7d data
+    # df to which we'll append our 3d data
     df_top100_best_3d = pd.DataFrame(columns=['id', 'price_change_percentage_3d'])
 
-    # getting the 7d performance of the top x coins
+    # getting the 3d performance of the top x coins
     for id in ids_list[:80]:
         # step 1: getting hourly prices for the last 7 days
         coin_data3d = cg.get_coin_market_chart_by_id(id=id, vs_currency='btc', days=3)
@@ -44,10 +44,11 @@ def get_coin_data():
         # splitting it in two columns
         coin_data3d = pd.DataFrame(coin_data3d['prices'].to_list(), columns=['timestamp', 'prices'])
         
-        # step 2: computing the percentage change for the last 7 days
-        oldest_day = coin_data3d.head(24)
+        # step 2: computing the percentage change for the last 3 days
+        # we take the mean of prices during the first 12 hours 3 days ago, and the mean of prices during the last 12 hours. 
+        oldest_day = coin_data3d.head(12)
         oldest_day_price_avg = oldest_day['prices'].mean()
-        mostrecent_day = coin_data3d.tail(24)
+        mostrecent_day = coin_data3d.tail(12)
         mostrecent_day_price_avg = mostrecent_day['prices'].mean()
         price_change_percentage_3d = ((mostrecent_day_price_avg - oldest_day_price_avg) / oldest_day_price_avg)*100
         
@@ -56,7 +57,7 @@ def get_coin_data():
         print(to_append)
         df_top100_best_3d = df_top100_best_3d.append(pd.DataFrame(to_append, columns=['id','price_change_percentage_3d']), ignore_index=True)
         # need 1 sec sleep time so we don't reach coingecko's API limit 
-        time.sleep(1)
+        time.sleep(0.5)
 
     # merging dataframes to get the symbols and mkcap ranks
     df = pd.merge(df_top100, df_top100_best_3d, on='id')
@@ -64,7 +65,8 @@ def get_coin_data():
     # selecting only specific columns
     df = df[['symbol', 'market_cap_rank', 'price_change_percentage_3d']]
     # renaming the columns
-    df.columns = ['Ticker', 'MkCap Rank', 'Price Change 3d']
+    df.columns = ['Ticker', 'N°', 'BTC% Change 3d']
+    df = df.set_index('N°')
     df = df.round(decimals=2)
     return df
 
@@ -125,14 +127,14 @@ def send_to_slack(type, data):
                 "type": "section",
                 "text": {
                     "type": "mrkdwn",
-                    "text": "*Top 25 ALTBTC - 24 hours ranking with 7 days performance*",
+                    "text": "*Top 25 ALTBTC - 3d performance ranking*",
                 },
             },
             {
                 "type": "section",
                 "text": {
                     "type": "mrkdwn",
-                    "text": "Welcome to The Crypto Bot, giving you daily update of the best performing alts in the past 24 hours from the top 80. \n We hope it helps you in your trading! :pray: \n\n",
+                    "text": "Welcome to The Crypto Bot 3d Perf, giving you daily update of the best performing alts over the past 3 days hours from the top 80 market cap. \n We hope it helps you in your trading! :pray: \n\n",
                 },
             },
             {
