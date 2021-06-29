@@ -59,7 +59,7 @@ def get_coin_data():
         # need 1 sec sleep time so we don't reach coingecko's API limit 
         time.sleep(0.5)
 
-    # merging dataframes to get the tickers and mkcap ranks
+    # merging dataframes to get the symbols and mkcap ranks
     df = pd.merge(df_top100, df_top100_best_3d, on='id')
     df = df.sort_values('price_change_percentage_3d', ascending=False)
     # selecting only specific columns

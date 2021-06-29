@@ -5,6 +5,11 @@ venv/
 __pycache__/
 
 images/
+slack-bot-local-test/
 slack-bot-local-test/.env
 slack-bot-local-test/.DS_Store
 slack-bot-local-test/images/
+
+slack-bot-app-3d/.env
+slack-bot-app-1d/.env
+

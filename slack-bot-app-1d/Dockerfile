@@ -2,7 +2,7 @@
 FROM python:3.8
 
 # set the working directory in the container
-WORKDIR /slack-bot
+WORKDIR /slack-bot-app-1d
 
 # copy the dependencies file to the working directory
 COPY requirements.txt .
@@ -14,4 +14,4 @@ RUN pip install -r requirements.txt
 COPY . .
 
 # command to run on container start
-CMD [ "python", "./main.py" ]
+CMD [ "python", "./main-1d.py" ]
