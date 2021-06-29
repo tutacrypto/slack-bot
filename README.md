@@ -1,6 +1,12 @@
-# Slack-bot
+# ALTBTC performance & ranking - Slackbot
 
-We want to create a bot that sends a message to slack every morning, with the ranking of the best performing cryptocurencies agains BTC in the last 24 hours, with their 7 days performance. 
+The main objective is to screen altcoins to be able to spot the best performing ones without needing to go through the whole list on coinmarketcap.
 
-## End Result
-<img width="776" alt="slack-message-screen" src="https://user-images.githubusercontent.com/33679821/117642147-46b68480-b187-11eb-9970-ec72f86ad418.png">
+Currently, we compare the performance of the top 80 coins in market cap and get the top 25 gainers in btc terms. This list is sent through a dedicated slack-channel. We look at the price change over two different timeframes: 24 hours and 3 days. 
+
+### 24 hours price changes
+We compare the price changes over the past 24 hours, and display there 7 days performance as well. This gives a short term signal of which coins have been performing well. 
+
+### 3 days price changes
+We compare the price changes of altcoins over the past 3 days (first 12h of the period against last 12h). Signals should be less noisy than for 24h changes, and could spot the beginning of strong & sustained uptrends. 
+
