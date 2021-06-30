@@ -57,7 +57,7 @@ def get_coin_data():
         print(to_append)
         df_top100_best_3d = df_top100_best_3d.append(pd.DataFrame(to_append, columns=['id','price_change_percentage_3d']), ignore_index=True)
         # need 1 sec sleep time so we don't reach coingecko's API limit 
-        time.sleep(0.5)
+        time.sleep(1)
 
     # merging dataframes to get the symbols and mkcap ranks
     df = pd.merge(df_top100, df_top100_best_3d, on='id')
