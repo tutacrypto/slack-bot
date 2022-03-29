@@ -7,7 +7,6 @@ import pandas as pd
 from pycoingecko import CoinGeckoAPI
 from slack_sdk import WebClient
 from tabulate import tabulate
-import plotly.graph_objects as go
 
 
 """
@@ -72,84 +71,45 @@ def get_coin_data():
 
 
 
-
-# the function that would be use to plot the data
-def plot_data(data, file_type):
-    # we need data that renders nice visually if we are going to plot it
-    df = data[:15]
-    df = df.sort_values('price_change_percentage_24h', ascending=True)
-
-    # plotting the dataframe
-    ids = df['symbol']
-    fig = go.Figure(data=[
-        go.Bar(name='24h', x=df['price_change_percentage_24h'], y=ids, orientation='h'),
-        go.Bar(name='7d', x=df['price_change_percentage_7d'], y=ids, orientation='h')
-    ])
-    # changing the bar mode
-    fig.update_layout(barmode='group')
-
-    # saving the plot
-    if file_type == "html":
-        # save as an html file (interactive)
-        fig.write_html("html/file.html")
-    else:
-        # save as a picture
-        fig.write_image("images/fig1.png")
-
-
-
-
-
 # sending the data to Slack
-def send_to_slack(type, data):
+def send_to_slack(data):
     data = data
     client = WebClient(token=os.environ.get("SLACK_TOKEN"))
     channel = os.environ.get("CHANNEL")
 
-
-    if type == "image":
-        plot_data(data, "png")
-        # sending the text or image to slack
-        client.files_upload(
-            channels=channel, 
-            initial_comment="Here's the 24h ranking of altcoins with their 7 days data, in BTC terms :rocket:", 
-            file="images/fig1.png",
-        )
-
-    elif type == "text":
-        client.chat_postMessage(
-            channel=channel,
-            username="The Crypto Bot",
-            # this will display in the notification
-            text= "Top 25 ALTBTC 3d",
-            blocks=[
-            {
-                "type": "section",
-                "text": {
-                    "type": "mrkdwn",
-                    "text": "*Top 25 ALTBTC - 3d ranking*",
-                },
+    client.chat_postMessage(
+        channel=channel,
+        username="The Crypto Bot",
+        # this will display in the notification
+        text= "Top 25 ALTBTC 3d",
+        blocks=[
+        {
+            "type": "section",
+            "text": {
+                "type": "mrkdwn",
+                "text": "*Top 25 ALTBTC - 3d ranking*",
             },
-            {
-                "type": "section",
-                "text": {
-                    "type": "mrkdwn",
-                    "text": "Welcome to The Crypto Bot 3d Perf, giving you daily update of the best performing alts over the past 3 days from the top 80 market cap. \n We hope this helps you in your trading! :pray: \n\n",
-                },
+        },
+        {
+            "type": "section",
+            "text": {
+                "type": "mrkdwn",
+                "text": "Welcome to The Crypto Bot 3d Perf, giving you daily update of the best performing alts over the past 3 days from the top 80 market cap. \n We hope this helps you in your trading! :pray: \n\n",
             },
-            {
-                "type": "section",
-                "text": {
-                    "type": "mrkdwn",
-                    "text": data[:25].to_markdown(),
-                },
-            },]
-        )
+        },
+        {
+            "type": "section",
+            "text": {
+                "type": "mrkdwn",
+                "text": data[:25].to_markdown(),
+            },
+        },]
+    )
 
 
 
     
 if __name__ == '__main__':
     # For now we prefer receiving the top 25 by text
-    send_to_slack("text", get_coin_data())
+    send_to_slack(get_coin_data())
 
